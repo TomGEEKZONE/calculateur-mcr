@@ -46,7 +46,7 @@ jobs:
 
           mkdir -p site
 
-          unzip -q Calculateur_MCR_V12_GitHub_Pages.zip -d site
+unzip -q Calculateur_MCR_V12_1_GitHub_Pages.zip -d site
 
           test -f site/index.html
 
