@@ -1,0 +1,56 @@
+name: Publier le Calculateur MCR V12.2
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Recuperer le depot
+        uses: actions/checkout@v4
+
+      - name: Decompresser et verifier la V12.2
+        run: |
+          mkdir -p site
+          unzip -tq Calculateur_MCR_V12_2_GitHub_Pages.zip
+          unzip -q Calculateur_MCR_V12_2_GitHub_Pages.zip -d site
+          test -f site/index.html
+          test -f site/sw.js
+          test -f site/offline.js
+          test -f site/manifest.webmanifest
+          test -f site/i18n.js
+          test -f site/.nojekyll
+          test "$(find site/assets -type f -name '*.png' | wc -l)" -eq 42
+          node --check site/sw.js
+          node --check site/offline.js
+
+      - name: Configurer GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Archiver le site pour GitHub Pages
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Publier le site
+        id: deployment
+        uses: actions/deploy-pages@v4
